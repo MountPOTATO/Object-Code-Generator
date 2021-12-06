@@ -117,6 +117,7 @@ def generate_active_info_list(tac_path, sym_path):
     :param tac_path: 存放四元式代码的文件路径
     :param sym_path: 存放符号表的文件路径
     :return: list<ActiveInfoItem>类型列表，即四元式列表
+             set()活跃变量集合
     """
 
     #生成四元式字符串的列表
@@ -127,13 +128,21 @@ def generate_active_info_list(tac_path, sym_path):
     var_set, qua_list = generate_var_set_and_qua_list(tac_list, sym_list)
 
     #输入活跃变量，生成活跃变量集合
-    active_var_list = input("请输入活跃变量列表(变量间以空格隔开):").split(" ")
-    active_var_set = list(set(active_var_list))
-    #错误检测,判断活跃变量是不是已有变量
-    for act_var in active_var_set:
-        if act_var not in var_set:
-            print("错误:活跃变量不在四元式变量中")
-            exit(1)
+    while True:
+        try:
+            active_var_list = input("请输入活跃变量列表(变量间以空格隔开):").split(" ")
+            active_var_set = list(set(active_var_list))
+            #错误检测,判断活跃变量是不是已有变量
+            for act_var in active_var_set:
+                if act_var not in var_set:
+                    raise UserWarning
+            break
+        except ValueError:
+            print("输入格式有误，请重试")
+        except UserWarning:
+            print("活跃变量不在四元式变量中，请重试")
+
+
 
     #变量名-信息链 字典,dict[str]=list<VarInfo>
     info_chain_dict = dict()
@@ -173,10 +182,10 @@ def generate_active_info_list(tac_path, sym_path):
         active_info_list.append(active_info_item)
 
     #输出查看结果
-    output_info_chain_dict(info_chain_dict)
-    output_active_info_list(active_info_list)
+    # output_info_chain_dict(info_chain_dict)
+    # output_active_info_list(active_info_list)
 
-    return active_info_list
+    return active_info_list,active_var_set
 
 
-# generate_active_info_list("tac.txt", "symbol.txt")
+# generate_active_info_list("../tac.txt", "../symbol.txt")

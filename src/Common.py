@@ -65,3 +65,5 @@ class ActiveInfoItem:
         self.LV = None
         self.LN = None
         self.RN = None
+
+
