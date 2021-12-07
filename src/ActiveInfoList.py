@@ -131,11 +131,13 @@ def generate_active_info_list(tac_path, sym_path):
     while True:
         try:
             active_var_list = input("请输入活跃变量列表(变量间以空格隔开):").split(" ")
-            active_var_set = list(set(active_var_list))
+            active_var_set = set(active_var_list)
             #错误检测,判断活跃变量是不是已有变量
-            for act_var in active_var_set:
-                if act_var not in var_set:
-                    raise UserWarning
+            active_var_set.discard("")
+            if len(active_var_set):
+                for act_var in active_var_set:
+                    if act_var not in var_set:
+                        raise UserWarning
             break
         except ValueError:
             print("输入格式有误，请重试")
@@ -182,10 +184,10 @@ def generate_active_info_list(tac_path, sym_path):
         active_info_list.append(active_info_item)
 
     #输出查看结果
-    # output_info_chain_dict(info_chain_dict)
-    # output_active_info_list(active_info_list)
+    output_info_chain_dict(info_chain_dict)
+    output_active_info_list(active_info_list)
 
     return active_info_list,active_var_set
 
 
-# generate_active_info_list("../tac.txt", "../symbol.txt")
+generate_active_info_list("../tac.txt", "../symbol.txt")
