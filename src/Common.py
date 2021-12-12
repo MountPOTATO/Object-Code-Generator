@@ -27,7 +27,7 @@ class QuaternaryCode:
         self.src2 = src2
 
     def __str__(self):
-        if self.op == "" and self.src2 == "":
+        if self.op == "":
             return self.des + ":=" + self.src1
         elif self.src2 == "":
             return self.des + ":=" + self.op + self.src1
@@ -42,7 +42,8 @@ class VarInfo:
     活跃信息：表示该变量是否还需要用到，用到即活跃，y表示活跃，^表示非活跃
     """
 
-    def __init__(self, next_state: str, active: str):
+    # 这里默认(待用信息，活跃信息)是(^,^)好一点，方便后续一元运算和赋值运算的信息表填写（HJK）
+    def __init__(self, next_state: str = "^", active: str = "^"):
         self.next = next_state
         self.active = active
 

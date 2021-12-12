@@ -55,6 +55,10 @@ def generate_var_set_and_qua_list(tac_list, symbol_list):
             sentence = sentence.replace(symbol, " ")
 
         var_list = sentence.split(" ")
+        # 为了形如"A:=-B"的一元式能正确地存到QuaternaryCode中，需要做一个排查(HJK)
+        if '' in var_list:
+            var_list.remove('')
+
         if op == "":
             qua_list.append(QuaternaryCode(var_list[0], var_list[1]))
         elif len(var_list) == 2:
@@ -62,6 +66,7 @@ def generate_var_set_and_qua_list(tac_list, symbol_list):
         elif len(var_list) == 3:
             qua_list.append(QuaternaryCode(var_list[0], var_list[1], op, var_list[2]))
         else:
+            # 其实不需要这里的异常检测，前面中间代码传过来的一定是无误的四元式（HJK）
             print("错误：该代码不符合三地址代码")
             exit(1)
 
@@ -170,10 +175,12 @@ def generate_active_info_list(tac_path, sym_path):
         active_info_item.LN = info_chain_dict[left_number][-1]
         if right_number != "":
             active_info_item.RN = info_chain_dict[right_number][-1]
+            # 右操作数的（待用，活跃）应该放在这里更新，而不是下面（HJK）
+            info_chain_dict[qua.src2].append(VarInfo(str(len(qua_list) - index), "y"))
 
         # 把符号表中src1源变量和src2源变量的待用信息设为当前四元式序号,活跃信息设为y
         info_chain_dict[qua.src1].append(VarInfo(str(len(qua_list) - index), "y"))
-        info_chain_dict[qua.src2].append(VarInfo(str(len(qua_list) - index), "y"))
+
 
         active_info_list.append(active_info_item)
 
