@@ -41,6 +41,7 @@ class VarInfo:
     待用信息：表示该变量在什么四元式中即将被用到，如：2表示将在第2条四元式中被用到，^表示非待用
     活跃信息：表示该变量是否还需要用到，用到即活跃，y表示活跃，^表示非活跃
     """
+
     def __init__(self, next_state: str, active: str):
         self.next = next_state
         self.active = active
@@ -60,6 +61,7 @@ class ActiveInfoItem:
     .LN:  左操作数，VarInfo类型 （即四元式的src1对应的符号对）
     .RN   右操作数，VarInfo类型 （即四元式的src2对应的符号对）
     """
+
     def __init__(self):
         self.QUA = None
         self.LV = None
@@ -67,3 +69,20 @@ class ActiveInfoItem:
         self.RN = None
 
 
+class RvalueItem:
+    def __init__(self):
+        self.valueItem = []
+        self.Index = None
+
+
+class AvalueItem:
+    def __init__(self):
+        self.valueItem = []
+        self.Index = None
+
+
+class RegisterAllocateItem:
+    def __init__(self):
+        self.QUA = None
+        self.A_B = None
+        self.A_C = None
