@@ -34,6 +34,12 @@ class QuaternaryCode:
         else:
             return self.des + ":=" + self.src1 + self.op + self.src2
 
+    def isUnary(self) -> bool:
+        """
+        一元运算时，形如A:=B的
+        """
+        return self.op == "" and self.src2 == ""
+
 
 class VarInfo:
     """
