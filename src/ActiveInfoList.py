@@ -181,14 +181,13 @@ def generate_active_info_list(tac_path, sym_path):
         # 把符号表中src1源变量和src2源变量的待用信息设为当前四元式序号,活跃信息设为y
         info_chain_dict[qua.src1].append(VarInfo(str(len(qua_list) - index), "y"))
 
-
         active_info_list.append(active_info_item)
 
     # 输出查看结果
     output_info_chain_dict(info_chain_dict)
     output_active_info_list(active_info_list)
 
-    return active_info_list, active_var_set, info_chain_dict
+    return active_info_list, var_set
 
 
 generate_active_info_list("../tac.txt", "../symbol.txt")
