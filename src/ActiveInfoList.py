@@ -7,8 +7,6 @@
  # @Description :
 """
 
-
-
 from Common import *
 
 
@@ -57,6 +55,10 @@ def generate_var_set_and_qua_list(tac_list, symbol_list):
             sentence = sentence.replace(symbol, " ")
 
         var_list = sentence.split(" ")
+        # 为了形如"A:=-B"的一元式能正确地存到QuaternaryCode中，需要做一个排查(HJK)
+        if '' in var_list:
+            var_list.remove('')
+
         if op == "":
             qua_list.append(QuaternaryCode(var_list[0], var_list[1]))
         elif len(var_list) == 2:
@@ -64,6 +66,7 @@ def generate_var_set_and_qua_list(tac_list, symbol_list):
         elif len(var_list) == 3:
             qua_list.append(QuaternaryCode(var_list[0], var_list[1], op, var_list[2]))
         else:
+            # 其实不需要这里的异常检测，前面中间代码传过来的一定是无误的四元式（HJK）
             print("错误：该代码不符合三地址代码")
             exit(1)
 
@@ -72,16 +75,17 @@ def generate_var_set_and_qua_list(tac_list, symbol_list):
 
     return var_set, qua_list
 
+
 def output_info_chain_dict(info_chain_dict):
     """
     打印变量名-信息链的字典
     :param info_chain_dict: 字典，key为变量，value为信息链，如C: (^,^)->(2,y)
     """
     print("=========变量名-信息链===========")
-    print("{:<7} {:<7}".format('变量名',"初始状态->信息链"))
+    print("{:<7} {:<7}".format('变量名', "初始状态->信息链"))
     print("-------------------------------")
     for var_key in list(info_chain_dict.keys()):
-        str_list=[str(var_info) for var_info in info_chain_dict[var_key]]
+        str_list = [str(var_info) for var_info in info_chain_dict[var_key]]
         print("{:<9} {:<7}".format(var_key,
                                    "->".join(str_list)))
     print("===============================")
@@ -100,14 +104,12 @@ def output_active_info_list(act_info_list):
                                                      '右操作数'))
     print("----------------------------------------------------------")
     for index, item in enumerate(act_info_list):
-        print("{:<8} {:<15} {:<11} {:<13} {:<10}".format("("+str(len(act_info_list) - index)+")",
+        print("{:<8} {:<15} {:<11} {:<13} {:<10}".format("(" + str(len(act_info_list) - index) + ")",
                                                          str(item.QUA),
                                                          str(item.LV),
                                                          str(item.LN),
                                                          str(item.RN)))
     print("==========================================================")
-
-
 
 
 def generate_active_info_list(tac_path, sym_path):
@@ -120,19 +122,19 @@ def generate_active_info_list(tac_path, sym_path):
              set()活跃变量集合
     """
 
-    #生成四元式字符串的列表
+    # 生成四元式字符串的列表
     tac_list = get_info_list_from_file(tac_path)
-    #生成符号字符串列表
+    # 生成符号字符串列表
     sym_list = get_symbol_list_from_file(sym_path)
-    #生成变量集合和四元式集合(正序）
+    # 生成变量集合和四元式集合(正序）
     var_set, qua_list = generate_var_set_and_qua_list(tac_list, sym_list)
 
-    #输入活跃变量，生成活跃变量集合
+    # 输入活跃变量，生成活跃变量集合
     while True:
         try:
             active_var_list = input("请输入活跃变量列表(变量间以空格隔开):").split(" ")
             active_var_set = set(active_var_list)
-            #错误检测,判断活跃变量是不是已有变量
+            # 错误检测,判断活跃变量是不是已有变量
             active_var_set.discard("")
             if len(active_var_set):
                 for act_var in active_var_set:
@@ -144,50 +146,48 @@ def generate_active_info_list(tac_path, sym_path):
         except UserWarning:
             print("活跃变量不在四元式变量中，请重试")
 
-
-
-    #变量名-信息链 字典,dict[str]=list<VarInfo>
+    # 变量名-信息链 字典,dict[str]=list<VarInfo>
     info_chain_dict = dict()
 
-    #非待用初始状态和活跃状态（视输入的活跃变量决定)
+    # 非待用初始状态和活跃状态（视输入的活跃变量决定)
     for var in var_set:
         info_chain_dict[var] = [VarInfo("^", "y")] if var in active_var_set else [VarInfo("^", "^")]
 
-    #最终要输出的四元式列表：list<QuaternaryCode>
+    # 最终要输出的四元式列表：list<QuaternaryCode>
     active_info_list = list()
-    #倒序遍历
+    # 倒序遍历
     for index, qua in enumerate(list(reversed(qua_list))):
         active_info_item = ActiveInfoItem()
 
-        #四元式附加
+        # 四元式附加
         active_info_item.QUA = qua
 
-        #把符号表中des目标变量的待用信息和活跃信息附加到当前四元式.LV上
+        # 把符号表中des目标变量的待用信息和活跃信息附加到当前四元式.LV上
         left_value = qua.des
         active_info_item.LV = info_chain_dict[left_value][-1]
-        #把符号表中des目标变量的待用信息和活跃信息分别置为“非待用”和“非活跃”；
+        # 把符号表中des目标变量的待用信息和活跃信息分别置为“非待用”和“非活跃”；
         info_chain_dict[qua.des].append(VarInfo("^", "^"))
 
         # TODO:求证A:=B和A:=op B的情况怎么处理
 
-        #把符号表中src1源变量和src2源变量的待用信息和活跃信息附加到四元式.LN和.RN上
+        # 把符号表中src1源变量和src2源变量的待用信息和活跃信息附加到四元式.LN和.RN上
         left_number, right_number = qua.src1, qua.src2
         active_info_item.LN = info_chain_dict[left_number][-1]
         if right_number != "":
             active_info_item.RN = info_chain_dict[right_number][-1]
+            # 右操作数的（待用，活跃）应该放在这里更新，而不是下面（HJK）
+            info_chain_dict[qua.src2].append(VarInfo(str(len(qua_list) - index), "y"))
 
-
-        #把符号表中src1源变量和src2源变量的待用信息设为当前四元式序号,活跃信息设为y
+        # 把符号表中src1源变量和src2源变量的待用信息设为当前四元式序号,活跃信息设为y
         info_chain_dict[qua.src1].append(VarInfo(str(len(qua_list) - index), "y"))
-        info_chain_dict[qua.src2].append(VarInfo(str(len(qua_list) - index), "y"))
 
         active_info_list.append(active_info_item)
 
-    #输出查看结果
+    # 输出查看结果
     output_info_chain_dict(info_chain_dict)
     output_active_info_list(active_info_list)
 
-    return active_info_list,active_var_set
+    return active_info_list, var_set
 
 
 generate_active_info_list("../tac.txt", "../symbol.txt")

@@ -27,7 +27,7 @@ class QuaternaryCode:
         self.src2 = src2
 
     def __str__(self):
-        if self.op == "" and self.src2 == "":
+        if self.op == "":
             return self.des + ":=" + self.src1
         elif self.src2 == "":
             return self.des + ":=" + self.op + self.src1
@@ -41,7 +41,9 @@ class VarInfo:
     待用信息：表示该变量在什么四元式中即将被用到，如：2表示将在第2条四元式中被用到，^表示非待用
     活跃信息：表示该变量是否还需要用到，用到即活跃，y表示活跃，^表示非活跃
     """
-    def __init__(self, next_state: str, active: str):
+
+    # 这里默认(待用信息，活跃信息)是(^,^)好一点，方便后续一元运算和赋值运算的信息表填写（HJK）
+    def __init__(self, next_state: str = "^", active: str = "^"):
         self.next = next_state
         self.active = active
 
@@ -60,6 +62,7 @@ class ActiveInfoItem:
     .LN:  左操作数，VarInfo类型 （即四元式的src1对应的符号对）
     .RN   右操作数，VarInfo类型 （即四元式的src2对应的符号对）
     """
+
     def __init__(self):
         self.QUA = None
         self.LV = None
@@ -67,3 +70,20 @@ class ActiveInfoItem:
         self.RN = None
 
 
+class RvalueItem:
+    def __init__(self):
+        self.valueItem = []
+        self.Index = None
+
+
+class AvalueItem:
+    def __init__(self):
+        self.valueItem = []
+        self.Index = None
+
+
+class RegisterAllocateItem:
+    def __init__(self):
+        self.QUA = None
+        self.A_B = None
+        self.A_C = None
