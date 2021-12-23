@@ -190,4 +190,4 @@ def generate_active_info_list(tac_path, sym_path):
     return active_info_list, var_set
 
 
-generate_active_info_list("../tac.txt", "../symbol.txt")
+# generate_active_info_list("../tac.txt", "../symbol.txt")

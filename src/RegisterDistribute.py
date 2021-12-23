@@ -256,4 +256,4 @@ def reg_test(tac_path, sym_path):
         print(AVALUE)
 
 
-reg_test("../tac.txt", "../symbol.txt")
+# reg_test("../tac.txt", "../symbol.txt")
