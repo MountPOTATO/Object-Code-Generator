@@ -159,10 +159,11 @@ def refresh_RVALUE_And_AVALUE(RVALUE,AVALUE,active_info_item,robbed_register):
     :return to_storage_code_set: 需要执行的刷到内存的指令集合
     """
     to_storage_code_set = set()
+
     # 四元式左值、左操作数、右操作数
-    A = active_info_item.LV
-    B = active_info_item.LN
-    C = active_info_item.RN
+    A = active_info_item.QUA.des
+    B = active_info_item.QUA.src1
+    C = active_info_item.QUA.src2
     # 检查寄存器中的每一个变量
     for M in RVALUE[robbed_register]:
         # 如果M不是A，或者如果M是A又是C，但不是B并且B也不在RVALUE[Ri]中
@@ -176,7 +177,7 @@ def refresh_RVALUE_And_AVALUE(RVALUE,AVALUE,active_info_item,robbed_register):
                 AVALUE[M] = {M}
 
             RVALUE[robbed_register].remove(M)
-
+            print("ok")
     return to_storage_code_set
 
 
@@ -194,21 +195,20 @@ def find_robbed_register(active_info_list,n,RVALUE, AVLAUE):
     # 1.优先选择寄存器中的所有变量都有内存副本或者之后不活跃的寄存器
     for reg in RVALUE:
         number = 0
-        for var in reg:
+        for var in RVALUE[reg]:
             # 内存中有副本或者在此之后不活跃
             if var in AVLAUE[var] or not_be_used_later(var,active_info_list,n):
                 number += 1
             else:
                 break
         # 如果寄存器中的所有变量都有内存副本或者之后不活跃，那么就可以被抢占，而且不需要刷到内存
-        if number == len(reg):
+        if number == len(RVALUE[reg]):
             robbed_register = reg
     # 2.如果上面的方法没有找到合适的寄存器，那就只能退而求其次，选择一个里面的变量很久之后才会被用到的寄存器了
     if robbed_register == "":
         # 选择一个里面的变量很久之后才会被用到的寄存器
         robbed_register = used_furthest(RVALUE,active_info_list,n)
         to_storage_code_set = refresh_RVALUE_And_AVALUE(RVALUE,AVLAUE,active_info_list[n-1],robbed_register)
-
     return robbed_register,to_storage_code_set
 
 
