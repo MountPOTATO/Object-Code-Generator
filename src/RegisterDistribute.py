@@ -165,6 +165,7 @@ def refresh_RVALUE_And_AVALUE(RVALUE,AVALUE,active_info_item,robbed_register):
     B = active_info_item.QUA.src1
     C = active_info_item.QUA.src2
     # 检查寄存器中的每一个变量
+    need_to_be_removed = set()
     for M in RVALUE[robbed_register]:
         # 如果M不是A，或者如果M是A又是C，但不是B并且B也不在RVALUE[Ri]中
         if M != A or (M == A and M == C and M != B and B not in RVALUE[robbed_register]):
@@ -175,9 +176,13 @@ def refresh_RVALUE_And_AVALUE(RVALUE,AVALUE,active_info_item,robbed_register):
                 AVALUE[M] = {M,robbed_register}
             else :
                 AVALUE[M] = {M}
-
-            RVALUE[robbed_register].remove(M)
-            print("ok")
+            need_to_be_removed.add(M)
+            # RVALUE[robbed_register].remove(M)
+            # print("ok")
+    for M in need_to_be_removed:
+        RVALUE[robbed_register].remove(M)
+    # print("breakPoint:")
+    # print(to_storage_code_set)
     return to_storage_code_set
 
 
