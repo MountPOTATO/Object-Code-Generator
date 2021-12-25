@@ -187,7 +187,7 @@ def generate_active_info_list(tac_path, sym_path):
     output_info_chain_dict(info_chain_dict)
     output_active_info_list(active_info_list)
 
-    return active_info_list, var_set
+    return active_info_list, var_set, active_var_set
 
 
 # generate_active_info_list("../tac.txt", "../symbol.txt")

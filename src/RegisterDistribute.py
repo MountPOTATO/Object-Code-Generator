@@ -172,7 +172,7 @@ def refresh_RVALUE_And_AVALUE(RVALUE,AVALUE,active_info_item,robbed_register):
             if M not in AVALUE[M]:
                 to_storage_code_set.add("ST "+robbed_register+","+M)
 
-            if M != B or (M == C and B in RVALUE[robbed_register]):
+            if M == B or (M == C and B in RVALUE[robbed_register]):
                 AVALUE[M] = {M,robbed_register}
             else :
                 AVALUE[M] = {M}
