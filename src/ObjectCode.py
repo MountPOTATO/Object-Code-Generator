@@ -9,6 +9,8 @@
 
 from RegisterDistribute import *
 
+# from DAG import *
+
 
 # ckx added
 def RVALUE_AVALUE_add_to_show_list(R_show_list, A_show_list, RVALUE, AVALUE):
@@ -55,10 +57,20 @@ def operator_conversion(operator):
         return 'none'
 
 
-def update_AVALUE_initial(active_info_list, var_set, AVALUE):
-    src_var_set = set([qua_list.QUA.des for qua_list in active_info_list])
+def update_AVALUE_initial(active_info_list, AVALUE):
 
-    diff_set = var_set.difference(src_var_set)
+    des_set=set()
+    src_set=set()
+    # TODO:常数处理
+    qua_list=[info_list.QUA for info_list in active_info_list]
+    for qua in qua_list:
+        des_set.add(qua.des)
+        if qua.src1 not in des_set:
+            src_set.add(qua.src1)
+        if qua.src2 not in des_set:
+            src_set.add(qua.src2)
+
+    diff_set = src_set
 
     print("已经存在内存中的值：", diff_set)
 
@@ -109,7 +121,7 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
         # print('=====')
         # 首先输出需要 ST 的指令
         for command in store_set:
-            #print(command)
+            # print(command)
             # ckx added:
             command_show_list.append(command)
 
@@ -159,7 +171,8 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
 
         # 5. 及时腾空不需要的src1 和 src2
         # ckx added: 写法修改
-        #TODO: 发现缺少了一个部分，若B或C的现行值在基本块中不再被引用，也不是基本块出口之后的活跃变量也要被刷掉
+        # TODO: 发现缺少了一个部分，若B或C的现行值在基本块中不再被引用，也不是基本块出口之后的活跃变量也要被刷掉
+        print(active_info_list[i].LN.next)
         if active_info_list[i].LN.next == '^':
             for register_set in RVALUE:
                 if src1 in RVALUE[register_set]:
@@ -167,6 +180,7 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
                     AVALUE[src1].remove(register_set)
 
         if active_info_list[i].RN is not None:
+            print(active_info_list[i].RN.next)
             if active_info_list[i].RN.next == '^':
                 for register_set in RVALUE:
                     if src2 in RVALUE[register_set]:
@@ -186,7 +200,7 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
         for register in RVALUE:
             if active_var in RVALUE[register]:
                 AVALUE[active_var].add(active_var)
-                print('\t\t\t'+'ST ' + register + ' ' + active_var)
+                print('\t\t\t' + 'ST ' + register + ' ' + active_var)
 
 
 def obj_code_test(tac_path, sym_path):
@@ -200,7 +214,7 @@ def obj_code_test(tac_path, sym_path):
     # 输入上一个基本块已经存在于内存中的值
     # AVALUE = update_AVALUE(var_set, AVALUE)
     # ckx added: 已经存在内存中的值
-    AVALUE = update_AVALUE_initial(active_info_list, var_set, AVALUE)
+    AVALUE = update_AVALUE_initial(active_info_list, AVALUE)
 
     print('需要转换为目标代码的四元式有：')
     print('==========')
