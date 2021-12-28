@@ -204,6 +204,9 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
 
 
 def obj_code_test(tac_path, sym_path):
+
+
+
     # 获取活跃信息和变量集合
     active_info_list, var_set, active_var_set = generate_active_info_list(tac_path, sym_path)
     active_info_list.reverse()
@@ -238,4 +241,5 @@ def obj_code_test(tac_path, sym_path):
     # print(AVALUE)
 
 
-obj_code_test("../tac.txt", "../symbol.txt")
+
+# obj_code_test("../tac.txt", "../symbol.txt")

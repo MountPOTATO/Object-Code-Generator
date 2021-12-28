@@ -122,6 +122,7 @@ def generate_active_info_list(tac_path, sym_path):
              set()活跃变量集合
     """
 
+
     # 生成四元式字符串的列表
     tac_list = get_info_list_from_file(tac_path)
     # 生成符号字符串列表

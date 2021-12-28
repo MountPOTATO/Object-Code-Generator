@@ -1,4 +1,4 @@
-T:=A-B
-U:=A-C
-V:=T+U
-W:=V+U
+T1:=A+B
+T2:=C+D
+T3:=E-T2
+T4:=T1-T3
