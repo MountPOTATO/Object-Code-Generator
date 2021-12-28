@@ -8,7 +8,6 @@
 """
 
 from RegisterDistribute import *
-from AllocateRegister import *
 
 
 # ckx added

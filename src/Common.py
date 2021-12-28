@@ -74,22 +74,3 @@ class ActiveInfoItem:
         self.LV = None
         self.LN = None
         self.RN = None
-
-
-class RvalueItem:
-    def __init__(self):
-        self.valueItem = []
-        self.Index = None
-
-
-class AvalueItem:
-    def __init__(self):
-        self.valueItem = []
-        self.Index = None
-
-
-class RegisterAllocateItem:
-    def __init__(self):
-        self.QUA = None
-        self.A_B = None
-        self.A_C = None
