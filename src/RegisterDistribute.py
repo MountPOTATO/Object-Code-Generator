@@ -176,6 +176,7 @@ def refresh_RVALUE_And_AVALUE(RVALUE,AVALUE,active_info_item,robbed_register):
                 AVALUE[M] = {M,robbed_register}
             else :
                 AVALUE[M] = {M}
+
             need_to_be_removed.add(M)
             # RVALUE[robbed_register].remove(M)
             # print("ok")

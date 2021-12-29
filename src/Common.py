@@ -38,7 +38,7 @@ class QuaternaryCode:
         """
         一元运算时，形如A:=B的
         """
-        return self.op == "" and self.src2 == ""
+        return self.src2 == ""
 
 
 class VarInfo:

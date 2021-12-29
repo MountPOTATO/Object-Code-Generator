@@ -72,7 +72,6 @@ def generate_var_set_and_qua_list(tac_list, symbol_list):
 
         for i in var_list:
             var_set.add(i)
-
     return var_set, qua_list
 
 

@@ -14,6 +14,9 @@ from RegisterDistribute import *
 
 # ckx added
 def RVALUE_AVALUE_add_to_show_list(R_show_list, A_show_list, RVALUE, AVALUE):
+
+
+
     for reg in RVALUE.keys():
         if len(RVALUE[reg]) == 0:
             R_show_list.append(reg + ":")
@@ -71,6 +74,7 @@ def update_AVALUE_initial(active_info_list, AVALUE):
             src_set.add(qua.src2)
 
     diff_set = src_set
+    diff_set.discard("")
 
     print("已经存在内存中的值：", diff_set)
 
@@ -103,6 +107,7 @@ def update_AVALUE(var_set, AVALUE):
     for var in memory_var_list:
         AVALUE[var] = var
 
+
     return AVALUE
 
 
@@ -110,15 +115,17 @@ def update_AVALUE(var_set, AVALUE):
 def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
     for i in range(0, len(active_info_list)):
 
+        #对unary情况的处理
+        if active_info_list[i].QUA.isUnary():
+            print("yes")
+
         # ckx added:用于打印输出的一些列表:
         qua_show_list, command_show_list, RVALUE_show_list, AVALUE_show_list = [], [], [], []
         qua_show_list.append(str(active_info_list[i].QUA))
 
         # 1. 获取目标寄存器 register
         register, store_set = GETREG(active_info_list, i + 1, RVALUE, AVALUE)
-        # print('=====')
-        # print(active_info_list[i].QUA)
-        # print('=====')
+
         # 首先输出需要 ST 的指令
         for command in store_set:
             # print(command)
@@ -151,6 +158,8 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
         # 3. 生成代码
         # TODO: A=op B的处理
 
+
+
         operator = operator_conversion(op)
         if operator != 'none':
             if src1_address != register:
@@ -158,9 +167,16 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
                 command_show_list.append('LD' + ' ' + register + ' ' + src1_address)
                 # print(operator + ' ' + register + ' ' + src2_address)
                 command_show_list.append(operator + ' ' + register + ' ' + src2_address)
+                #TODO: 正确性检查
             else:
                 # print(operator + ' ' + register + ' ' + src2_address)
                 command_show_list.append(operator + ' ' + register + ' ' + src2_address)
+
+        #如果B'或C'为R，则删除对应的AVALUE中的寄存器
+        if src1_address == register:
+            AVALUE[src1].discard(register)
+        if src2_address == register:
+            AVALUE[src2].discard(register)
 
         # 4. AVALUE[des] = {register}, RVALUE[register] = {des}
 
@@ -170,9 +186,6 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
         RVALUE[register].add(des)
 
         # 5. 及时腾空不需要的src1 和 src2
-        # ckx added: 写法修改
-        # TODO: 发现缺少了一个部分，若B或C的现行值在基本块中不再被引用，也不是基本块出口之后的活跃变量也要被刷掉
-        print(active_info_list[i].LN.next)
         if active_info_list[i].LN.next == '^':
             for register_set in RVALUE:
                 if src1 in RVALUE[register_set]:
@@ -180,7 +193,6 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
                     AVALUE[src1].remove(register_set)
 
         if active_info_list[i].RN is not None:
-            print(active_info_list[i].RN.next)
             if active_info_list[i].RN.next == '^':
                 for register_set in RVALUE:
                     if src2 in RVALUE[register_set]:
@@ -191,16 +203,17 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
         # print("RVALUE:",RVALUE)
         # print("AVALUE:",AVALUE)
 
+        if i==len(active_info_list)-1:
+            # 6. 出基本块时，将除基本块仍然活跃的值存入内存
+            for active_var in active_var_set:
+                for register in RVALUE:
+                    if active_var in RVALUE[register]:
+                        AVALUE[active_var].add(active_var)
+                        command_show_list.append('ST ' + register + ' ' + active_var)
         # ckx added
         RVALUE_AVALUE_add_to_show_list(RVALUE_show_list, AVALUE_show_list, RVALUE, AVALUE)
         object_code_print_line(qua_show_list, command_show_list, RVALUE_show_list, AVALUE_show_list)
 
-    # 6. 出基本块时，将除基本块仍然活跃的值存入内存
-    for active_var in active_var_set:
-        for register in RVALUE:
-            if active_var in RVALUE[register]:
-                AVALUE[active_var].add(active_var)
-                print('\t\t\t' + 'ST ' + register + ' ' + active_var)
 
 
 def obj_code_test(tac_path, sym_path):
@@ -230,7 +243,6 @@ def obj_code_test(tac_path, sym_path):
                                                '目标代码',
                                                'RVALUE',
                                                'AVALUE'))
-    print("----------------------------------------------------------")
     obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set)
     print("==========================================================")
 
