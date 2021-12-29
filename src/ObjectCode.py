@@ -253,6 +253,7 @@ def obj_code_test(tac_path, sym_path):
                                                '目标代码',
                                                'RVALUE',
                                                'AVALUE'))
+
     obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set)
     print("==========================================================")
 

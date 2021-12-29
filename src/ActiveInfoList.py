@@ -124,6 +124,11 @@ def generate_active_info_list(tac_path, sym_path):
 
     # 生成四元式字符串的列表
     tac_list = get_info_list_from_file(tac_path)
+    print('三地址代码:')
+    print('==========')
+    for code in tac_list:
+        print(code)
+    print('==========')
     # 生成符号字符串列表
     sym_list = get_symbol_list_from_file(sym_path)
     # 生成变量集合和四元式集合(正序）
