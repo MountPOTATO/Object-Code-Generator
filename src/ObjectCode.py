@@ -14,9 +14,9 @@ from RegisterDistribute import *
 
 # ckx added
 def RVALUE_AVALUE_add_to_show_list(R_show_list, A_show_list, RVALUE, AVALUE):
-
-
-
+    """
+    用于打印的列表更新（show list存放将要打印的字符串）此处专门处理RVALUE和AVALUE的打印
+    """
     for reg in RVALUE.keys():
         if len(RVALUE[reg]) == 0:
             R_show_list.append(reg + ":")
@@ -34,6 +34,9 @@ def RVALUE_AVALUE_add_to_show_list(R_show_list, A_show_list, RVALUE, AVALUE):
 
 # ckx added
 def object_code_print_line(qua_show_list, command_show_list, RVALUE_show_list, AVALUE_show_list):
+    """
+    打印函数，按顺序打印中间代码列表，汇编代码列表，RVALUE列表，AVALUE列表
+    """
     RVALUE_show_list.sort()
     AVALUE_show_list.sort()
     max_line = max(len(command_show_list), len(RVALUE_show_list), len(AVALUE_show_list))
@@ -61,13 +64,14 @@ def operator_conversion(operator):
 
 
 def update_AVALUE_initial(active_info_list, AVALUE):
+    """
+    更新AVALUE值，即对每个四元式中原本存在于内存的变量的AVALUE进行更新
+    """
 
-    des_set=set()
     src_set=set()
-    # TODO:常数处理
+    # 自动生成原本存在内存的变量值
     qua_list=[info_list.QUA for info_list in active_info_list]
     for qua in qua_list:
-        des_set.add(qua.des)
         if qua.src1 not in des_set:
             src_set.add(qua.src1)
         if qua.src2 not in des_set:
@@ -78,6 +82,7 @@ def update_AVALUE_initial(active_info_list, AVALUE):
 
     print("已经存在内存中的值：", diff_set)
 
+    #更新AVALUE
     for var in diff_set:
         AVALUE[var] = var
 
@@ -118,14 +123,12 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
                     AVALUE[B]={register}
 
             # 2.对A:=op B的处理
-            #TODO: 测试
             else:
                 B = qua.src1
                 B_reg=""
                 for reg in RVALUE.keys():
                     if B in RVALUE[reg]:
                         B_reg=reg
-
                 #如果B的现行值也在R中，不生成LD语句
                 if B_reg!=register:
                     command_show_list.append('LD ' + register + ' ' + qua.src1)
@@ -165,11 +168,9 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
                         break
                     else:
                         src2_address = address
+
+
             # 3. 生成代码
-            # TODO: A=op B的处理
-
-
-
             operator = operator_conversion(op)
             if operator != 'none':
                 if src1_address != register:
@@ -209,9 +210,6 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
                             RVALUE[register_set].remove(src2)
                             AVALUE[src2].remove(register_set)
 
-        # 测试结果
-        # print("RVALUE:",RVALUE)
-        # print("AVALUE:",AVALUE)
 
         if i==len(active_info_list)-1:
             # 6. 出基本块时，将除基本块仍然活跃的值存入内存
@@ -220,7 +218,8 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
                     if active_var in RVALUE[register]:
                         AVALUE[active_var].add(active_var)
                         command_show_list.append('ST ' + register + ' ' + active_var)
-        # ckx added
+
+        #打印一个中间代码对应表格一行的信息
         RVALUE_AVALUE_add_to_show_list(RVALUE_show_list, AVALUE_show_list, RVALUE, AVALUE)
         object_code_print_line(qua_show_list, command_show_list, RVALUE_show_list, AVALUE_show_list)
 
@@ -239,14 +238,13 @@ def obj_code_test(tac_path, sym_path):
 
     # 输入上一个基本块已经存在于内存中的值
     # AVALUE = update_AVALUE(var_set, AVALUE)
-    # ckx added: 已经存在内存中的值
     AVALUE = update_AVALUE_initial(active_info_list, AVALUE)
 
-    print('需要转换为目标代码的四元式有：')
-    print('==========')
-    for active_info in active_info_list:
-        print(active_info.QUA)
-    print('==========')
+    # print('需要转换为目标代码的四元式有：')
+    # print('==========')
+    # for active_info in active_info_list:
+    #     print(active_info.QUA)
+    # print('==========')
 
     print("=========算法6.2和6.3生成寄存器分配结果和目标代码生成结果=========")
     print("{:<9} {:<10} {:<12} {:<15} ".format('中间代码',
@@ -257,11 +255,6 @@ def obj_code_test(tac_path, sym_path):
     obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set)
     print("==========================================================")
 
-    # 测试结果
-    # print('RVALUE:')
-    # print(RVALUE)
-    # print('AVALUE:')
-    # print(AVALUE)
 
 
 

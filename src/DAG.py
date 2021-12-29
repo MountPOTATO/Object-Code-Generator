@@ -3,7 +3,7 @@
  # @Project     : Object-Code-Generator
  # @File        : DAG.py
  # #@Author     : mount_potato
- # @Date        : 2021/12/28 7:36 下午
+ # @Date        : 2021/12/20 7:36 下午
  # @Description :
 '''
 
@@ -18,6 +18,12 @@ import time
 
 class OptimDAG:
     def __init__(self, tac_path, sym_path,out_path):
+        """
+        初始化DAG优化器
+        :param tac_path: 存放四元式代码的文件路径
+        :param sym_path: 存放符号表的文件路径
+        :param out_path: 最终要输出的优化版四元式代码的文件路径
+        """
         self.temp_var_set = set()  # 临时变量集合
         self.nodes_list = []  # DAG节点列表
         self.new_qua = []  # 新的四元式列表
@@ -29,35 +35,34 @@ class OptimDAG:
         self.out_path=out_path
 
     def optim_tac(self):
+        """
+        执行优化器主要执行程序
+        """
 
         # 生成变量集合和四元式集合(正序）
         self.var_set, qua_list = generate_var_set_and_qua_list(self.tac_list, self.sym_list)
 
-        des_set = set()
-        # TODO:常数处理
+        #判断哪些函数是临时变量，并建立一个集合存储他们
         for qua in qua_list:
-            des_set.add(qua.des)
             if qua.src1 not in des_set:
                 self.temp_var_set.add(qua.src1)
             if qua.src2 not in des_set:
                 self.temp_var_set.add(qua.src2)
 
+        #建立DAG列表
         for qua in qua_list:
             if qua.isUnary():  # 四元式是一元运算符
-                idB = self.get_NODE(qua.src1)
+                id_B = self.get_NODE(qua.src1)
                 self.delete_sym(qua.des)
-                self.add_to_node(idB, qua.des)
-            else:
-                # TODO: if constant
-                idB = self.get_NODE(qua.src1)
-                idC = self.get_NODE(qua.src2)
-                idop = self.get_NODE(qua.op, idB, idC)
+                self.add_to_node(id_B, qua.des)
+            else: #四元式是二元运算符
+                id_B = self.get_NODE(qua.src1)
+                id_C = self.get_NODE(qua.src2)
+                id_op= self.get_NODE(qua.op, id_B, id_C)
 
                 self.delete_sym(qua.des)
-                self.add_to_node(idop, qua.des)
+                self.add_to_node(id_op, qua.des)
 
-        # self.generate_new_qua(self.nodes_list)
-        # print(self.new_qua)
         self.generate_new_qua(self.nodes_list)
 
     def get_NODE(self, sym, leftNodeID=None, rightNodeID=None):
@@ -86,10 +91,7 @@ class OptimDAG:
                 self.nodes_list.append(self.NODE(sym, len(self.nodes_list), signs, None, None))
                 return len(self.nodes_list) - 1
 
-
-
     def delete_sym(self, A):
-        # DAG中有A，但A不是主标记时，删除A
         for node in self.nodes_list:
             if A in node.signs and A != node.signs[0]:
                 node.signs.remove(A)
@@ -193,8 +195,6 @@ class OptimDAG:
 
 
 
-
-
-
-a = OptimDAG("../tac.txt", "../symbol.txt","../dag_tac.txt")
-a.optim_tac()
+#
+# a = OptimDAG("../tac.txt", "../symbol.txt","../dag_tac.txt")
+# a.optim_tac()
