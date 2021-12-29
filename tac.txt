@@ -2,4 +2,3 @@ T:=A-B
 U:=A-C
 V:=T+U
 W:=V+U
-Z:=W

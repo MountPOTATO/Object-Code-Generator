@@ -84,40 +84,12 @@ def update_AVALUE_initial(active_info_list, AVALUE):
     return AVALUE
 
 
-# 更新AVALUE, 里面主要存储上一个基本块结束之后存在内存中的值
-def update_AVALUE(var_set, AVALUE):
-    while True:
-        try:
-            memory_var_list = input("请输入已经存在于内存中的值: ").split(" ")
-            memory_var_set = set(memory_var_list)
-            # 错误检测,判断活跃变量是不是已有变量
-            memory_var_set.discard("")
-            if len(memory_var_set):
-                for var in memory_var_list:
-                    if var not in var_set:
-                        raise UserWarning
-            break
-        except ValueError:
-            print("输入格式有误，请重试")
-        except UserWarning:
-            print("此变量不是活跃变量，请重试")
 
-    # ckx added: 添加自动获取内存中值
-
-    for var in memory_var_list:
-        AVALUE[var] = var
-
-
-    return AVALUE
 
 
 # 目标代码生成算法
 def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
     for i in range(0, len(active_info_list)):
-
-        #对unary情况的处理
-        if active_info_list[i].QUA.isUnary():
-            print("yes")
 
         # ckx added:用于打印输出的一些列表:
         qua_show_list, command_show_list, RVALUE_show_list, AVALUE_show_list = [], [], [], []
@@ -126,78 +98,116 @@ def obj_code_generate(active_info_list, RVALUE, AVALUE, active_var_set):
         # 1. 获取目标寄存器 register
         register, store_set = GETREG(active_info_list, i + 1, RVALUE, AVALUE)
 
-        # 首先输出需要 ST 的指令
-        for command in store_set:
-            # print(command)
-            # ckx added:
-            command_show_list.append(command)
+        # add: 对unary情况的处理
+        if active_info_list[i].QUA.isUnary():
+            qua= active_info_list[i].QUA
+            #1.对A:=B的处理
+            if qua.op=='':
+                B=qua.src1
+                isInReg=False
+                for reg in RVALUE.keys():
+                    if B in RVALUE[reg]:
+                        #把Ri同时分配给B和A
+                        RVALUE[reg].add(qua.des)
+                        #存疑
+                        AVALUE[qua.des].add(reg)
+                        isInReg=True
+                if not isInReg:
+                    command_show_list.append('ST ' + register + ' ' + qua.src1)
+                    RVALUE[register]={B}
+                    AVALUE[B]={register}
 
-        src1 = active_info_list[i].QUA.src1
-        src2 = active_info_list[i].QUA.src2
-        op = active_info_list[i].QUA.op
-        des = active_info_list[i].QUA.des
-
-        src1_address = ''
-        src2_address = ''
-        # 2. 确定src1 和 src2 的地址，如果在寄存器中，优先选择寄存器
-        # 这里可以封装成一个函数
-        for address in list(AVALUE[src1]):
-            if address[0] == 'R':
-                if src1 in RVALUE[address]:
-                    src1_address = address
-                    break
+            # 2.对A:=op B的处理
+            #TODO: 测试
             else:
-                src1_address = address
-        if src2 != '':
-            for address in list(AVALUE[src2]):
+                B = qua.src1
+                B_reg=""
+                for reg in RVALUE.keys():
+                    if B in RVALUE[reg]:
+                        B_reg=reg
+
+                #如果B的现行值也在R中，不生成LD语句
+                if B_reg!=register:
+                    command_show_list.append('LD ' + register + ' ' + qua.src1)
+                    RVALUE[register] = {B}
+                    AVALUE[B] = {register}
+                command_show_list.append(operator_conversion(qua.op) +'1 '+register + ' ' + register)
+
+
+
+        else:
+            # 首先输出需要 ST 的指令
+            for command in store_set:
+                # print(command)
+                # ckx added:
+                command_show_list.append(command)
+
+            src1 = active_info_list[i].QUA.src1
+            src2 = active_info_list[i].QUA.src2
+            op = active_info_list[i].QUA.op
+            des = active_info_list[i].QUA.des
+
+            src1_address = ''
+            src2_address = ''
+            # 2. 确定src1 和 src2 的地址，如果在寄存器中，优先选择寄存器
+            # 这里可以封装成一个函数
+            for address in list(AVALUE[src1]):
                 if address[0] == 'R':
-                    src2_address = address
-                    break
+                    if src1 in RVALUE[address]:
+                        src1_address = address
+                        break
                 else:
-                    src2_address = address
-        # 3. 生成代码
-        # TODO: A=op B的处理
+                    src1_address = address
+            if src2 != '':
+                for address in list(AVALUE[src2]):
+                    if address[0] == 'R':
+                        src2_address = address
+                        break
+                    else:
+                        src2_address = address
+            # 3. 生成代码
+            # TODO: A=op B的处理
 
 
 
-        operator = operator_conversion(op)
-        if operator != 'none':
-            if src1_address != register:
-                # print('LD' + ' ' + register + ' ' + src1_address)
-                command_show_list.append('LD' + ' ' + register + ' ' + src1_address)
-                # print(operator + ' ' + register + ' ' + src2_address)
-                command_show_list.append(operator + ' ' + register + ' ' + src2_address)
-                #TODO: 正确性检查
-            else:
-                # print(operator + ' ' + register + ' ' + src2_address)
-                command_show_list.append(operator + ' ' + register + ' ' + src2_address)
+            operator = operator_conversion(op)
+            if operator != 'none':
+                if src1_address != register:
+                    # print('LD' + ' ' + register + ' ' + src1_address)
+                    command_show_list.append('LD' + ' ' + register + ' ' + src1_address)
+                    # print(operator + ' ' + register + ' ' + src2_address)
+                    command_show_list.append(operator + ' ' + register + ' ' + src2_address)
+                    #TODO: 正确性检查
+                else:
+                    # print(operator + ' ' + register + ' ' + src2_address)
+                    command_show_list.append(operator + ' ' + register + ' ' + src2_address)
 
-        #如果B'或C'为R，则删除对应的AVALUE中的寄存器
-        if src1_address == register:
-            AVALUE[src1].discard(register)
-        if src2_address == register:
-            AVALUE[src2].discard(register)
+            #如果B'或C'为R，则删除对应的AVALUE中的寄存器
+            if src1_address == register:
+                AVALUE[src1].discard(register)
+            if src2_address == register:
+                AVALUE[src2].discard(register)
 
-        # 4. AVALUE[des] = {register}, RVALUE[register] = {des}
+            # 4. AVALUE[des] = {register}, RVALUE[register] = {des}
 
-        AVALUE[des] = set()
-        AVALUE[des].add(register)
-        RVALUE[register] = set()
-        RVALUE[register].add(des)
+            AVALUE[des] = set()
+            AVALUE[des].add(register)
+            RVALUE[register] = set()
+            RVALUE[register].add(des)
 
-        # 5. 及时腾空不需要的src1 和 src2
-        if active_info_list[i].LN.next == '^':
-            for register_set in RVALUE:
-                if src1 in RVALUE[register_set]:
-                    RVALUE[register_set].remove(src1)
-                    AVALUE[src1].remove(register_set)
-
-        if active_info_list[i].RN is not None:
-            if active_info_list[i].RN.next == '^':
+            # 5. 及时腾空不需要的src1 和 src2
+            if active_info_list[i].LN.next == '^':
                 for register_set in RVALUE:
-                    if src2 in RVALUE[register_set]:
-                        RVALUE[register_set].remove(src2)
-                        AVALUE[src2].remove(register_set)
+                    if src1 in RVALUE[register_set]:
+                        RVALUE[register_set].remove(src1)
+                        AVALUE[src1].remove(register_set)
+
+            if active_info_list[i].RN is not None:
+                if active_info_list[i].RN.next == '^':
+                    for register_set in RVALUE:
+                        if src2 in RVALUE[register_set]:
+                            RVALUE[register_set].remove(src2)
+                            AVALUE[src2].remove(register_set)
 
         # 测试结果
         # print("RVALUE:",RVALUE)
